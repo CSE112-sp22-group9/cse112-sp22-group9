@@ -82,6 +82,7 @@ describe('basic navigation for BJ', () => {
     });
 
     it('Test6: at weekly screen, make sure header day is the current day', async () => {
+        await page.waitForTimeout(300);
         const currentDateStr = await page.$eval(
             '#header_date',
             (dateHeader) => {
@@ -107,7 +108,7 @@ describe('basic navigation for BJ', () => {
         await page.$eval('#header_date', (btn) => {
             btn.click();
         });
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(1000);
 
         const currentDateStr = await page.$eval('#date', (dateHeader) => {
             return dateHeader.innerHTML;
@@ -194,10 +195,6 @@ describe('basic navigation for BJ', () => {
 
     it('Test15: edit a bullet in TODO', async () => {
         // go back to daily page
-        await page.waitForTimeout('300');
-        await page.$eval('#header_date', (btn) => {
-            btn.click();
-        });
         await page.waitForTimeout('300');
 
         /*
