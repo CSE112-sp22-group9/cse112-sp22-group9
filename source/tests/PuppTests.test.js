@@ -63,11 +63,11 @@ describe('basic navigation for BJ', () => {
 
         await page.$eval('#email', (usernameInput) => {
             // test email
-            usernameInput.value = 'test@gmail.com';
+            usernameInput.value = 'puppTester@mail.com';
         });
 
         await page.$eval('#pin', (passwordInput) => {
-            passwordInput.value = 'test123';
+            passwordInput.value = 'puppTester1!';
         });
 
         await page.$eval('#login-button', (button) => {
