@@ -116,10 +116,24 @@
                         <p id="sign-up-text">Don't have an account?</p>
                         <button id="signup-button">SIGN UP</button>
                     </div>
+                    <div class="vert-center">
+                        <button id="forget-button">Forgot password?</button>
+                    </div>
                 </div>
             </div>
         </div>
-        <img src="./Images/Main-Dino.jpg" id="big-logo" />
+        <div id="forget-popup">
+            <h3 id="popup-title">Enter email to reset password</h3>
+            <input
+                type="email"
+                class="popup-text"
+                id="forget-popup-text"
+                required
+            />
+            <button id="submit-email">OK</button>
+            <button id="cancel-forget">Cancel</button>
+        </div>
+
         <script src="../Backend/FirebaseInit.js" type="module"></script>
         <script src="../Backend/BackendInit.js" type="module"></script>
         <script src="./Login.js" type="module"></script>

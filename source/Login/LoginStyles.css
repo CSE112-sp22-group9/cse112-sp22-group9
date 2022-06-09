@@ -216,7 +216,8 @@ input[type='email']:focus {
     width: 10%;
 }
 
-#signup-button {
+#signup-button,
+#forget-button {
     background-color: white;
     border-color: white;
     border-style: solid;
@@ -229,7 +230,12 @@ input[type='email']:focus {
     right: 1.5vh;
 }
 
-#signup-button:hover {
+.vert-center {
+    text-align: center;
+}
+
+#signup-button:hover,
+#forget-button:hover {
     text-decoration: underline;
 }
 
@@ -248,4 +254,65 @@ input[type='email']:focus {
 #title {
     position: relative;
     right: 11vh;
+}
+
+/* for forgot password popup */
+
+#forget-popup {
+    background-color: white;
+    border-radius: 20px;
+    border: 1px solid black;
+    display: none;
+    font-family: verdana, sans-serif;
+    height: 30%;
+    left: 35%;
+    margin: 0 auto;
+    position: absolute;
+    top: 25%;
+    width: 30%;
+}
+
+#forget-popup-text {
+    background-color: #f4f8f5;
+    border: 0;
+    font-size: 2vh;
+    height: 15%;
+    left: 5%;
+    position: absolute;
+    top: 37%;
+    width: 90%;
+}
+
+#cancel-forget {
+    background-color: white;
+    border-radius: 50px;
+    border: 0px;
+    bottom: 15%;
+    color: #39b594;
+    cursor: pointer;
+    font-size: 2vh;
+    height: 18%;
+    outline: 2px solid #39b594;
+    position: absolute;
+    right: 18%;
+    width: 23%;
+}
+
+#popup-title {
+    font-size: 3vh;
+    margin: 7% 5%;
+}
+
+#submit-email {
+    background-color: #a9c7bf;
+    border-radius: 50px;
+    border: 0;
+    bottom: 15%;
+    color: white;
+    cursor: pointer;
+    font-size: 2vh;
+    height: 18%;
+    left: 18%;
+    position: absolute;
+    width: 23%;
 }

@@ -2,7 +2,9 @@ import {
     GoogleAuthProvider,
     browserSessionPersistence,
     createUserWithEmailAndPassword,
+    fetchSignInMethodsForEmail,
     getAdditionalUserInfo,
+    sendPasswordResetEmail,
     signInWithEmailAndPassword,
     signInWithPopup,
 } from '../Backend/firebase-src/firebase-auth.min.js';
@@ -13,6 +15,7 @@ import { ref, set } from '../Backend/firebase-src/firebase-database.min.js';
 window.onload = () => {
     loginSignUpSetup();
     togglePasswordSetup();
+    forgetPassword();
 };
 
 /**
@@ -28,6 +31,39 @@ function customAlert(text) {
         '</span>';
     document.querySelector('.alert').style.display = 'block';
     document.querySelector('.alert').innerHTML = `${closeButtonHTML}${text}`;
+}
+
+/**
+ * Send password reset email to the given email
+ */
+function handleForgotPassword() {
+    return new Promise((resolve, reject) => {
+        let email = document.getElementById('forget-popup-text').value;
+
+        if (!isValidEmail(email)) {
+            customAlert('Invalid Email');
+            reject();
+        }
+
+        // check if email exists
+        fetchSignInMethodsForEmail(auth, email).then((signInMethods) => {
+            // exist -> send reset password email
+            if (signInMethods.length > 0) {
+                sendPasswordResetEmail(auth, email)
+                    .then(() => {
+                        customAlert('Password reset email sent!');
+                        resolve();
+                    })
+                    .catch((err) => {
+                        customAlert(err.message);
+                        reject();
+                    });
+            } else {
+                customAlert('Email does not exist');
+                reject();
+            }
+        });
+    });
 }
 
 /**
@@ -70,13 +106,6 @@ function googleSignIn() {
                 }
             })
             .catch((error) => {
-                // Handle Errors here.
-                // const errorCode = error.code;
-                // const errorMessage = error.message;
-                // The email of the user's account used.
-                // const email = error.customData.email;
-                // The AuthCredential type that was used.
-                // const credential = GoogleAuthProvider.credentialFromError(error);
                 customAlert(error.message);
             });
     });
@@ -261,5 +290,30 @@ function togglePasswordSetup() {
         } else {
             togPassword.setAttribute('src', '../Images/hide-pass.png');
         }
+    });
+}
+
+/**
+ * Forgot password to send email a reset password
+ */
+function forgetPassword() {
+    let forgetButton = document.getElementById('forget-button');
+    let forgetPopup = document.getElementById('forget-popup');
+    let subEmailBtn = document.getElementById('submit-email');
+    let canForBtn = document.getElementById('cancel-forget');
+
+    // pull up forgot password pop up
+    forgetButton.addEventListener('click', function () {
+        forgetPopup.style.display = 'block';
+    });
+
+    // submit email
+    subEmailBtn.addEventListener('click', function () {
+        handleForgotPassword().then(() => (forgetPopup.style.display = 'none'));
+    });
+
+    // close pop up
+    canForBtn.addEventListener('click', function () {
+        forgetPopup.style.display = 'none';
     });
 }
