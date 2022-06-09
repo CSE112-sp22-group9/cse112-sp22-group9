@@ -194,7 +194,7 @@ describe('basic navigation for BJ', () => {
 
     it('Test15: edit a bullet in TODO', async () => {
         // go back to daily page
-	await page.waitForTimeout('300');
+        await page.waitForTimeout('300');
         await page.$eval('#header_date', (btn) => {
             btn.click();
         });
