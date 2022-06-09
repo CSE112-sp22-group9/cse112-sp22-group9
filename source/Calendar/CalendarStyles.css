@@ -1,8 +1,52 @@
+/*
+NOTE: In order to find component-specific sections of CSS, search this document
+for our delimiter: ||
+*/
+
+/* || General */
+
 body {
-    margin: 0;
-    padding: 0;
     font-family: 'Montserrat', Montserrat;
+    margin: 0;
+    overflow-x: hidden;
+    padding: 0;
 }
+
+.alert {
+    background-color: #38b593;
+    color: white;
+    display: none;
+    justify-content: space-between;
+    left: 0px;
+    margin-bottom: 15px;
+    padding: 20px;
+    position: absolute;
+    right: 0px;
+    z-index: 1;
+}
+
+.calendar-wrapper {
+    align-items: center;
+    background: #c2f7b5;
+    display: flex;
+    flex-direction: column;
+    justify-items: stretch;
+    margin: 0px;
+    padding: 0px;
+    width: 100vw;
+}
+
+.calendar-bg {
+    background: #c2f7b5;
+    display: inline-block;
+    height: 100vh;
+    width: 100vw;
+}
+
+ul {
+    list-style-type: none;
+}
+
 .wrapper {
     background: black;
     display: grid;
@@ -14,22 +58,38 @@ body {
     height: 100vh;
     width: 100vw;
 }
-.calendar-wrapper {
-    background: #c2f7b5;
-    margin: 0px;
-    padding: 0px;
-    display: flex;
-    flex-direction: column;
-    justify-items: stretch;
-    align-items: center;
-    width: 100vw;
+
+/* || Header */
+
+/* Month header */
+.calMonthHeader {
+    background: #585858;
+    border-radius: 2vw 2vw 0 0;
+    color: white;
+    height: 6vmax;
+    padding-left: 1vw;
+    padding-top: 2vmax;
 }
 
-.calendar-bg {
-    width: 100vw;
-    height: 100vh;
-    background: #c2f7b5;
-    display: inline-block;
+/* Month header's text */
+.calMonthLabel {
+    background-color: #585858;
+    float: left;
+    font-size: 2.5vw;
+    letter-spacing: 0.3vw;
+    margin: auto;
+    text-transform: uppercase;
+}
+
+/* Year header's text */
+.calYearLabel {
+    background-color: #585858;
+    float: left;
+    font-size: 2.5vw;
+    letter-spacing: 0.3vw;
+    margin: auto;
+    padding-left: 1vw;
+    text-transform: uppercase;
 }
 
 .header {
@@ -38,200 +98,121 @@ body {
     flex-direction: column;
     min-height: 0;
 }
+
 #header_date {
-    position: relative;
-    font-family: 'Inter';
-    font-style: normal;
     color: white;
+    font-family: 'Inter';
     font-size: 7vh;
+    font-style: normal;
     padding-left: 7%;
     padding-top: 2%;
+    position: relative;
 }
 
-.content {
-    display: grid;
-    grid-template-columns: 4fr 3fr 3fr;
-}
-.weekly_preview {
-    background: #c2f7b5;
-}
-.monthly_preview {
-    background: #c2f7b5;
-    display: grid;
-    /* grid-template-rows: 2fr 8fr; */
-}
-.photo_album {
-    background: pink;
-    display: grid;
-    grid-template-rows: 1fr 9fr;
-}
-.photo_header {
-    display: grid;
-    grid-template-columns: 8fr 2fr;
-    text-align: left;
-}
+/* || Calendar Block */
 
-/* Todo Block */
-
-#todo {
-    grid-area: todo;
-    background-color: white;
-    margin: 1vw;
-    padding: 1vw 3vw 1vw 2vw;
-    border-radius: 2vw;
-    border-style: solid;
-    border-width: 1mm;
-    border-color: black;
-    height: 75vh;
-    width: 80%;
-    overflow: auto;
-
-    min-height: 35vw;
-}
-
-#todo::-webkit-scrollbar {
-    display: none; /* color of the tracking area */
-}
-
-#addTodo {
-    background-color: transparent;
-    border: none;
-    font-size: 3vh;
-}
-
-/* Calendar Block */
-
-/* TODO: fix calendar sizes */
 .calendar-div {
-    width: 75vw;
+    padding-top: 2vh;
     right: 15px;
     top: 10px;
-    padding-top: 2vh;
-}
-
-/* Month header */
-.calMonthHeader {
-    height: 6vmax;
-    padding-top: 2vmax;
-    padding-left: 1vw;
-    background: #585858;
-    color: white;
-    border-radius: 2vw 2vw 0 0;
-}
-
-/* Month header's text */
-.calMonthLabel {
-    background-color: #585858;
-    font-size: 2.5vw;
-    text-transform: uppercase;
-    letter-spacing: 0.3vw;
-    float: left;
-    margin: auto;
-}
-
-.calYearLabel {
-    background-color: #585858;
-    font-size: 2.5vw;
-    text-transform: uppercase;
-    letter-spacing: 0.3vw;
-    float: left;
-    margin: auto;
-    padding-left: 1vw;
-}
-
-.show-content {
-    display: none;
-}
-
-.dropdown-content {
-    display: block;
-    position: absolute;
-    margin-top: 3vw;
-    background-color: #f9f9f9;
-    color: black;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-}
-
-.day-notes {
-    text-align: center;
-}
-
-/* Weekdays (Sun-Sat) */
-.calWeekdaysLabel {
-    margin: 0;
-    background-color: white;
-    display: flex;
-}
-
-.calWeekday {
-    width: 13.6%;
-    color: #666;
-    text-align: center;
-    font-size: 1.8vw;
-    background: none;
-}
-
-/* Days (1-31) */
-.calDaysField {
-    padding-bottom: 2vh;
-    background: white;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    border-radius: 0 0 2vw 2vw;
-}
-
-.calDay {
-    list-style-type: none;
-    width: 13.6%;
-    height: 6vmax;
-    text-align: start;
-    font-size: 1.25vmax;
-    color: black;
-    background: none;
-    padding-top: 2px;
-    padding-left: 2px;
-    border-color: black;
-    border-width: 0.5px;
-    border-style: solid;
-    text-decoration: none;
+    width: 75vw;
 }
 
 .calBlankDay {
     background: none;
 }
 
-/* 
-    Highlight the "current" day 
-    We can change the color to be based on the theme color
-*/
-.calToday {
-    background: #c2f7b5;
+/* Days (1-31) */
+.calDaysField {
+    background: white;
+    border-radius: 0 0 2vw 2vw;
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding-bottom: 2vh;
 }
 
-ul {
+.calDay {
+    background: none;
+    border-color: black;
+    border-style: solid;
+    border-width: 0.5px;
+    color: black;
+    font-size: 1.25vmax;
+    height: 6vmax;
     list-style-type: none;
+    padding-left: 2px;
+    padding-top: 2px;
+    text-align: start;
+    text-decoration: none;
+    width: 13.6%;
+}
+
+/* Weekdays (Sun-Sat) */
+.calWeekdaysLabel {
+    background-color: white;
+    display: flex;
+    margin: 0;
+}
+
+.calWeekday {
+    background: none;
+    color: #666;
+    font-size: 1.8vw;
+    text-align: center;
+    width: 13.6%;
+}
+
+/* the inner part of each day on the calendar */
+.day-notes {
+    text-align: center;
+}
+
+.dropdown-content {
+    background-color: #f9f9f9;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    color: black;
+    display: block;
+    margin-top: 3vw;
+    min-width: 160px;
+    position: absolute;
+    z-index: 1;
+}
+
+.show-content {
+    display: none;
+}
+
+/* || Goal Reminder Block */
+
+.goalContainer {
+    display: flex;
+    justify-content: space-between;
 }
 
 #goalReminder {
     background-color: white;
     border-radius: 2vw;
-    /* border-style: solid; */
     border-width: 1mm;
-    /* border-color: black; */
-    margin-top: 2vh;
-    margin-bottom: 2vh;
-    width: 75vw;
-    height: 30vh;
     display: grid;
-    padding: 10px;
     grid-template-columns: [month] 48% [year] 48%;
+    height: 30vh;
+    margin-bottom: 2vh;
+    margin-top: 2vh;
+    padding: 10px;
+    width: 75vw;
 }
 
 #goalReminder + h1 {
     grid-row-start: title;
+}
+
+#notesDino {
+    bottom: 3vh;
+    height: 13vh;
+    position: absolute;
+    right: 5vh;
+    width: 10vw;
 }
 
 #monthGoal {
@@ -242,11 +223,20 @@ ul {
 
 #monthGoal > h2 {
     background-color: white;
+    margin-block-end: 0em;
+    margin-block-start: 0.83em;
     position: -webkit-sticky;
     position: sticky;
     top: 1px;
-    margin-block-start: 0.83em;
-    margin-block-end: 0em;
+}
+
+#plus-month,
+#plus-year {
+    cursor: pointer;
+    flex: 2;
+    margin: auto auto;
+    max-width: 29px;
+    text-align: center;
 }
 
 #yearGoal {
@@ -257,110 +247,70 @@ ul {
 
 #yearGoal > h2 {
     background-color: white;
+    margin-block-end: 0em;
+    margin-block-start: 0.83em;
     position: -webkit-sticky;
     position: sticky;
     top: 1px;
-    margin-block-start: 0.83em;
-    margin-block-end: 0em;
 }
 
-#notesDino {
-    height: 13vh;
-    width: 10vw;
-    position: absolute;
-    bottom: 3vh;
-    right: 5vh;
-}
+/* || Monthly and Yearly Goal popup*/
 
-#plus-month {
-    flex: 2;
-    text-align: center;
-}
-
-#plus-year {
-    flex: 2;
-    text-align: center;
-    cursor: pointer;
-}
-
-.goalContainer {
-    display: flex;
-}
-
-.entry-form {
-    height: 3vh;
-    padding: 0.7vh;
-}
-
-.entry-form-hide {
-    display: none;
-}
-
-.entry-form-text {
-    height: 80%;
-    width: 50%;
-    font-size: 1.5vh;
-}
-
-.entry-form-button {
-    height: 100%;
-    width: 6vh;
-    font-size: 1.5vh;
-    background-color: var(--bg-color);
-    border: none;
-    border-radius: 0.5vh;
-}
-
-/*Monthly and Yearly Goal popup*/
 #calendar-popup {
+    background-color: white;
+    border-radius: 20px;
+    border: 1px solid black;
     display: none;
+    font-family: verdana, sans-serif;
+    height: 30%;
+    left: 35%;
     margin: 0 auto;
     position: absolute;
     top: 25%;
     width: 30%;
-    height: 30%;
-    left: 35%;
-    background-color: white;
-    border: 1px solid black;
-    border-radius: 20px;
-    font-family: verdana, sans-serif;
 }
+
+#calendar-popup-text {
+    background-color: #f4f8f5;
+    border: 0;
+    font-size: 2vh;
+    height: 15%;
+    left: 5%;
+    position: absolute;
+    top: 37%;
+    width: 90%;
+}
+
+#cancel-note {
+    background-color: white;
+    border-radius: 50px;
+    border: 0px;
+    bottom: 15%;
+    color: #39b594;
+    cursor: pointer;
+    font-size: 2vh;
+    height: 18%;
+    outline: 2px solid #39b594;
+    position: absolute;
+    right: 18%;
+    width: 23%;
+}
+
 #popup-title {
     font-size: 30px;
     margin: 7% 5%;
 }
-#calendar-popup-text {
-    position: absolute;
-    top: 37%;
-    left: 5%;
-    height: 15%;
-    width: 90%;
-    font-size: 160%;
-    border: 0;
-    background-color: #f4f8f5;
-}
+
 #submit-note {
-    position: absolute;
-    bottom: 15%;
-    left: 18%;
-    width: 23%;
-    height: 18%;
-    font-size: 150%;
-    color: white;
     background-color: #a9c7bf;
+    border-radius: 50px;
     border: 0;
-    border-radius: 50px;
-}
-#cancel-note {
-    position: absolute;
     bottom: 15%;
-    right: 18%;
-    width: 23%;
+    color: white;
+    cursor: pointer;
+    font-size: 2vh;
     height: 18%;
-    font-size: 150%;
-    background-color: white;
-    color: #39b594;
-    outline: 2px solid #39b594;
-    border: 0px;
-    border-radius: 50px;
+    left: 18%;
+    position: absolute;
+    width: 23%;
 }

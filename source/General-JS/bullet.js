@@ -1,4 +1,10 @@
 // <bullet-entry> custom web component
+const STAR_SVG = '../Images/Star.svg';
+const PENCIL_SVG = '../Images/Pencil.svg';
+const HOUSE_SVG = './../Images/House.svg';
+const HEART_SVG = '../Images/Heart.svg';
+const EVENT_SVG = '../Images/Event.svg';
+
 class BulletEntry extends HTMLElement {
     constructor() {
         super();
@@ -98,10 +104,10 @@ class BulletEntry extends HTMLElement {
                             <button id="dropdownHover" class="dropdownButton">v</button>
                             <div class="dropdown">
                                 <div class="row">
-                                    <p id="edit"><img src="../DailyOverview/Images/Edit.svg" alt="Edit"></p>
-                                    <p id="delete"><img src="../DailyOverview/Images/Delete.svg" alt="Delete"></p>
-                                    <p id="add"><img src="../DailyOverview/Images/Add.svg" alt="Add"></p>
-                                    <p id="done"><img src="../DailyOverview/Images/Done.svg" alt="Done"></p>
+                                    <p id="edit"><img src="../Images/Edit.svg" alt="Edit"></p>
+                                    <p id="delete"><img src="../Images/Delete.svg" alt="Delete"></p>
+                                    <p id="add"><img src="../Images/Add.svg" alt="Add"></p>
+                                    <p id="done"><img src="../Images/Done.svg" alt="Done"></p>
                                 </div>
                                 <div class="featuresContainer">
                                     <select id="features"> 
@@ -275,44 +281,28 @@ class BulletEntry extends HTMLElement {
             .getElementById(entry.features)
             .setAttribute('selected', 'true');
 
+        const ul = this.shadowRoot.querySelector('ul');
         switch (entry.features) {
             case 'normal':
-                this.shadowRoot.querySelector('ul').style.listStyleImage =
-                    'none';
+                ul.style.listStyleImage = 'none';
                 break;
             case 'important': // star icon
-                this.shadowRoot.querySelector('ul').style.listStyleImage =
-                    // required to use double quotes below due to inner single quotes
-                    // eslint-disable-next-line quotes
-                    "url('./../DailyOverview/Images/Star.svg')";
+                ul.style.listStyleImage = `url(${STAR_SVG})`;
                 break;
             case 'workRelated': // pencil
-                this.shadowRoot.querySelector('ul').style.listStyleImage =
-                    // required to use double quotes below due to inner single quotes
-                    // eslint-disable-next-line quotes
-                    "url('./../DailyOverview/Images/Pencil.svg')";
+                ul.style.listStyleImage = `url(${PENCIL_SVG})`;
                 break;
             case 'household': // house
-                this.shadowRoot.querySelector('ul').style.listStyleImage =
-                    // required to use double quotes below due to inner single quotes
-                    // eslint-disable-next-line quotes
-                    "url('./../DailyOverview/Images/House.svg')";
+                ul.style.listStyleImage = `url(${HOUSE_SVG})`;
                 break;
             case 'personal': // heart
-                this.shadowRoot.querySelector('ul').style.listStyleImage =
-                    // required to use double quotes below due to inner single quotes
-                    // eslint-disable-next-line quotes
-                    "url('./../DailyOverview/Images/Heart.svg')";
+                ul.style.listStyleImage = `url(${HEART_SVG})`;
                 break;
             case 'event': // heart
-                this.shadowRoot.querySelector('ul').style.listStyleImage =
-                    // required to use double quotes below due to inner single quotes
-                    // eslint-disable-next-line quotes
-                    "url('./../DailyOverview/Images/Event.svg')";
+                ul.style.listStyleImage = `url(${EVENT_SVG})`;
                 break;
             case 'other': // square
-                this.shadowRoot.querySelector('ul').style.listStyleType =
-                    'square';
+                ul.style.listStyleType = 'square';
                 break;
         }
     }

@@ -2,7 +2,7 @@
   "name": "cse112-sp22-group9",
   "version": "0.5.0",
   "description": "BuJo project",
-  "main": "index.js",
+  "main": "babel.config.js",
   "scripts": {
     "test": "jest",
     "prepare": "husky install",
@@ -41,9 +41,11 @@
     "husky": "^7.0.0",
     "jest": "^26.6.3",
     "jest-puppeteer": "^5.0.3",
+    "jest-watcher": "^28.1.1",
     "jsdoc": "^3.6.7",
     "lint-staged": "^12.4.1",
     "prettier": "2.2.1",
-    "puppeteer": "^9.1.1"
+    "puppeteer": "^9.1.1",
+    "p-each-series": "^3.0.0"
   }
 }

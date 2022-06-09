@@ -9,7 +9,7 @@ import {
 } from './firebase-src/firebase-database.min.js';
 
 // see getMonthName()
-const monthNames = [
+const MONTH_NAMES = [
     'January',
     'February',
     'March',
@@ -25,10 +25,10 @@ const monthNames = [
 ];
 
 // regular expression testing on the password
-const upperCasePattern = /(?=.*?[A-Z])/;
-const lowcasePattern = /(?=.*?[a-z])/;
-const digitPattern = /(?=.*?[0-9])/;
-const specCharPattern = /(?=.*?[#?!@$%^&*-])/;
+const UPPER_CASE_PATTERN = /(?=.*?[A-Z])/;
+const LOWER_CASE_PATTERN = /(?=.*?[a-z])/;
+const DIGIT_PATTERN = /(?=.*?[0-9])/;
+const SPECIAL_CHAR_PATTERN = /(?=.*?[#?!@$%^&*-])/;
 
 /**
  * add a base64 encoded photo in the database
@@ -42,14 +42,7 @@ const specCharPattern = /(?=.*?[#?!@$%^&*-])/;
  * a constant name to our database
  */
 async function addPhoto(dayStr, photoFile) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, day, year] = dayStr.split('/');
     const base64Str = await getBase64(photoFile);
@@ -57,6 +50,15 @@ async function addPhoto(dayStr, photoFile) {
     // creates a new key for the new photo and stores it as
     // 'firebaseUUID: base64String'
     pushObjToDBPath(dbPath, base64Str);
+}
+
+async function redirectNotLoggedInUser(customAlertFunc, pageTimeoutInSeconds) {
+    const currentUserID = await getUserID();
+    if (currentUserID === undefined) {
+        customAlertFunc.call(null, 'Please login. Redirecting to login page');
+        await new Promise((r) => setTimeout(r, pageTimeoutInSeconds * 1000));
+        window.location.replace('../Login/Login.html');
+    }
 }
 
 /**
@@ -71,14 +73,7 @@ async function addPhoto(dayStr, photoFile) {
  * @returns void
  */
 async function createDay(dayObj) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, day, year] = dayObj.date.split('/');
     const dbPath = `${currentUserID}/${year}/${month}/${day}`;
@@ -96,14 +91,7 @@ async function createDay(dayObj) {
  * @returns void
  */
 async function createMonthlyGoals(monthObj) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, year] = monthObj.month.split('/');
     const dbPath = `${currentUserID}/${year}/${month}`;
@@ -119,14 +107,7 @@ async function createMonthlyGoals(monthObj) {
  * @returns void
  */
 async function createYearlyGoals(yearObj) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const dbPath = `${currentUserID}/${yearObj.year}`;
     // see bottom of createDay() for update justification
@@ -139,14 +120,7 @@ async function createYearlyGoals(yearObj) {
  * @returns void
  */
 async function deleteDay(dayStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, day, year] = dayStr.split('/');
     const dbPath = `${currentUserID}/${year}/${month}/${day}`;
@@ -159,14 +133,7 @@ async function deleteDay(dayStr) {
  * @returns void
  */
 async function deleteMonthlyGoals(monthStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
     const [month, year] = monthStr.split('/');
     const dbPath = `${currentUserID}/${year}/${month}/goals`;
     deleteObjAtDBPath(dbPath);
@@ -179,14 +146,7 @@ async function deleteMonthlyGoals(monthStr) {
  * @returns void
  */
 async function deletePhoto(dayStr, base64) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, day, year] = dayStr.split('/');
     const dbPath = `${currentUserID}/${year}/${month}/${day}/photos`;
@@ -227,14 +187,7 @@ async function deleteObjAtDBPath(path) {
  * @returns void
  */
 async function deleteYearlyGoals(yearStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const dbPath = `${currentUserID}/${yearStr}/goals`;
     deleteObjAtDBPath(dbPath);
@@ -245,14 +198,7 @@ async function deleteYearlyGoals(yearStr) {
  * @returns default OR base64 URL of banner image if user uploads one
  */
 async function getBannerImage() {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const dbPath = `${currentUserID}/bannerImage`;
     return getDataAtDBPath(dbPath);
@@ -287,8 +233,6 @@ function getCurrentDate() {
         month: String(today.getMonth() + 1).padStart(2, '0'), // January is 0
         year: String(today.getFullYear()),
     };
-
-    console.log(dateObj);
 
     return dateObj;
 }
@@ -353,14 +297,7 @@ function getDateObj(dateStr) {
  *  returns undefined.
  */
 async function getDay(dateStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, day, year] = dateStr.split('/');
     const dbPath = `${currentUserID}/${year}/${month}/${day}`;
@@ -374,7 +311,7 @@ async function getDay(dateStr) {
  * @returns name of the corresponding month
  */
 function getMonthName(monthNumber) {
-    return monthNames[parseInt(monthNumber) - 1];
+    return MONTH_NAMES[parseInt(monthNumber) - 1];
 }
 
 /**
@@ -385,14 +322,7 @@ function getMonthName(monthNumber) {
  *  exist, returns undefined
  */
 async function getMonthObj(monthStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, year] = monthStr.split('/');
     const dbPath = `${currentUserID}/${year}/${month}`;
@@ -407,14 +337,7 @@ async function getMonthObj(monthStr) {
  *  exist, returns undefined
  */
 async function getMonthlyGoals(monthStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, year] = monthStr.split('/');
     const dbPath = `${currentUserID}/${year}/${month}/goals`;
@@ -426,14 +349,7 @@ async function getMonthlyGoals(monthStr) {
  * @returns default OR base64 URL of profile image if user uploads one
  */
 async function getProfileImage() {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const dbPath = `${currentUserID}/profileImage`;
     return getDataAtDBPath(dbPath);
@@ -444,14 +360,7 @@ async function getProfileImage() {
  * @returns user theme preference
  */
 async function getTheme() {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const dbPath = `${currentUserID}/theme`;
     return getDataAtDBPath(dbPath);
@@ -462,14 +371,16 @@ async function getTheme() {
  * @returns user id. null if no user is signed in or the
  * user is not signed in (i.e bypassing the authentication).
  */
-function getUserID() {
+async function getUserID() {
     // source: https://github.com/firebase/firebase-js-sdk/issues/462#:~:text=you%20can%20easily%20implement%20that%20on%20your%20own%20with%20a%20couple%20of%20lines%3A
-    return new Promise((resolve, reject) => {
+    const user = await new Promise((resolve, reject) => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
             unsubscribe();
             resolve(user);
         }, reject);
     });
+
+    return user ? user.uid : undefined;
 }
 
 /**
@@ -479,14 +390,7 @@ function getUserID() {
  *  returns undefined
  */
 async function getYearlyGoals(yearStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const dbPath = `${currentUserID}/${yearStr}/goals`;
     return getDataAtDBPath(dbPath);
@@ -515,13 +419,13 @@ function isValidEmail(userEmail) {
 function isValidPassword(password) {
     if (password.length < 8) {
         return 'Password length must be at least eight!';
-    } else if (!upperCasePattern.test(password)) {
+    } else if (!UPPER_CASE_PATTERN.test(password)) {
         return 'Password must contain an upper case!';
-    } else if (!lowcasePattern.test(password)) {
+    } else if (!LOWER_CASE_PATTERN.test(password)) {
         return 'Password must contain a lower case!';
-    } else if (!digitPattern.test(password)) {
+    } else if (!DIGIT_PATTERN.test(password)) {
         return 'Password must contain a digit!';
-    } else if (!specCharPattern.test(password)) {
+    } else if (!SPECIAL_CHAR_PATTERN.test(password)) {
         return 'Password must contain a special character!';
     }
     return '';
@@ -552,14 +456,7 @@ function setObjAtDBPath(path, obj) {
  * @param {String} imgStr Image URL of the banner image
  */
 async function updateBannerImage(imgStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
     let dbPath = `${currentUserID}/bannerImage`;
     setObjAtDBPath(dbPath, imgStr);
 }
@@ -596,14 +493,7 @@ function updateMonthlyGoals(monthObj) {
  * @param {String} notes notes to update
  */
 async function updateNote(dateStr, notes) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
 
     const [month, day, year] = dateStr.split('/');
     let dbPath = `${currentUserID}/${year}/${month}/${day}/notes`;
@@ -632,14 +522,7 @@ function updateObjAtDBPath(path, obj) {
  * @param {String} imgStr Image URL of the profile image
  */
 async function updateProfileImage(imgStr) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
     let dbPath = `${currentUserID}/profileImage`;
     setObjAtDBPath(dbPath, imgStr);
 }
@@ -649,14 +532,7 @@ async function updateProfileImage(imgStr) {
  * @param {String} newTheme Hex value of new theme color
  */
 async function updateTheme(newTheme) {
-    const currentUserID = await getUserID()
-        .then((user) => {
-            return user.uid;
-        })
-        .catch((err) => {
-            console.log(err);
-            return;
-        });
+    const currentUserID = await getUserID();
     let dbPath = `${currentUserID}/theme`;
     setObjAtDBPath(dbPath, newTheme);
 }
@@ -695,6 +571,7 @@ export {
     getYearlyGoals,
     isValidEmail,
     isValidPassword,
+    redirectNotLoggedInUser,
     updateBannerImage,
     updateDay,
     updateMonthlyGoals,
