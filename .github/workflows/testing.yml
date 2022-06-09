@@ -1,12 +1,12 @@
+# DEPRECATED as of the moment, running tests as part of the testing-deployment worklow
 # Name of the action
 name: Testing
 
-  # Controls when the action will run (on every push across all branches)
+  # Controls when the action will run
 on:
-  push:
-    branches:
-    #testing on testing branch rn
-    - testing
+  repository_dispatch:
+    # want this workflow to run when another workflow triggers it, (specifically once the testing deploy is done)
+    # types: [trigger-workflow-tests]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: 12
 
-      - name: Pull origin development
+      - name: Pull origin testing
         run: |
             git pull origin ${{ github.ref }}
 

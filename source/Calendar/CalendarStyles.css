@@ -1,0 +1,316 @@
+/*
+NOTE: In order to find component-specific sections of CSS, search this document
+for our delimiter: ||
+*/
+
+/* || General */
+
+body {
+    font-family: 'Montserrat', Montserrat;
+    margin: 0;
+    overflow-x: hidden;
+    padding: 0;
+}
+
+.alert {
+    background-color: #38b593;
+    color: white;
+    display: none;
+    justify-content: space-between;
+    left: 0px;
+    margin-bottom: 15px;
+    padding: 20px;
+    position: absolute;
+    right: 0px;
+    z-index: 1;
+}
+
+.calendar-wrapper {
+    align-items: center;
+    background: #c2f7b5;
+    display: flex;
+    flex-direction: column;
+    justify-items: stretch;
+    margin: 0px;
+    padding: 0px;
+    width: 100vw;
+}
+
+.calendar-bg {
+    background: #c2f7b5;
+    display: inline-block;
+    height: 100vh;
+    width: 100vw;
+}
+
+ul {
+    list-style-type: none;
+}
+
+.wrapper {
+    background: black;
+    display: grid;
+    margin: 0px;
+    padding: 0px;
+    grid-template-rows: 1fr 3fr;
+    justify-items: stretch;
+    align-items: stretch;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* || Header */
+
+/* Month header */
+.calMonthHeader {
+    background: #585858;
+    border-radius: 2vw 2vw 0 0;
+    color: white;
+    height: 6vmax;
+    padding-left: 1vw;
+    padding-top: 2vmax;
+}
+
+/* Month header's text */
+.calMonthLabel {
+    background-color: #585858;
+    float: left;
+    font-size: 2.5vw;
+    letter-spacing: 0.3vw;
+    margin: auto;
+    text-transform: uppercase;
+}
+
+/* Year header's text */
+.calYearLabel {
+    background-color: #585858;
+    float: left;
+    font-size: 2.5vw;
+    letter-spacing: 0.3vw;
+    margin: auto;
+    padding-left: 1vw;
+    text-transform: uppercase;
+}
+
+.header {
+    background-image: url('../Images/weekly_header.jpg');
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#header_date {
+    color: white;
+    font-family: 'Inter';
+    font-size: 7vh;
+    font-style: normal;
+    padding-left: 7%;
+    padding-top: 2%;
+    position: relative;
+}
+
+/* || Calendar Block */
+
+.calendar-div {
+    padding-top: 2vh;
+    right: 15px;
+    top: 10px;
+    width: 75vw;
+}
+
+.calBlankDay {
+    background: none;
+}
+
+/* Days (1-31) */
+.calDaysField {
+    background: white;
+    border-radius: 0 0 2vw 2vw;
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding-bottom: 2vh;
+}
+
+.calDay {
+    background: none;
+    border-color: black;
+    border-style: solid;
+    border-width: 0.5px;
+    color: black;
+    font-size: 1.25vmax;
+    height: 6vmax;
+    list-style-type: none;
+    padding-left: 2px;
+    padding-top: 2px;
+    text-align: start;
+    text-decoration: none;
+    width: 13.6%;
+}
+
+/* Weekdays (Sun-Sat) */
+.calWeekdaysLabel {
+    background-color: white;
+    display: flex;
+    margin: 0;
+}
+
+.calWeekday {
+    background: none;
+    color: #666;
+    font-size: 1.8vw;
+    text-align: center;
+    width: 13.6%;
+}
+
+/* the inner part of each day on the calendar */
+.day-notes {
+    text-align: center;
+}
+
+.dropdown-content {
+    background-color: #f9f9f9;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    color: black;
+    display: block;
+    margin-top: 3vw;
+    min-width: 160px;
+    position: absolute;
+    z-index: 1;
+}
+
+.show-content {
+    display: none;
+}
+
+/* || Goal Reminder Block */
+
+.goalContainer {
+    display: flex;
+    justify-content: space-between;
+}
+
+#goalReminder {
+    background-color: white;
+    border-radius: 2vw;
+    border-width: 1mm;
+    display: grid;
+    grid-template-columns: [month] 48% [year] 48%;
+    height: 30vh;
+    margin-bottom: 2vh;
+    margin-top: 2vh;
+    padding: 10px;
+    width: 75vw;
+}
+
+#goalReminder + h1 {
+    grid-row-start: title;
+}
+
+#notesDino {
+    bottom: 3vh;
+    height: 13vh;
+    position: absolute;
+    right: 5vh;
+    width: 10vw;
+}
+
+#monthGoal {
+    grid-row-start: month;
+    height: 22vh;
+    overflow: auto;
+}
+
+#monthGoal > h2 {
+    background-color: white;
+    margin-block-end: 0em;
+    margin-block-start: 0.83em;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 1px;
+}
+
+#plus-month,
+#plus-year {
+    cursor: pointer;
+    flex: 2;
+    margin: auto auto;
+    max-width: 29px;
+    text-align: center;
+}
+
+#yearGoal {
+    grid-row-start: year;
+    height: 22vh;
+    overflow: auto;
+}
+
+#yearGoal > h2 {
+    background-color: white;
+    margin-block-end: 0em;
+    margin-block-start: 0.83em;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 1px;
+}
+
+/* || Monthly and Yearly Goal popup*/
+
+#calendar-popup {
+    background-color: white;
+    border-radius: 20px;
+    border: 1px solid black;
+    display: none;
+    font-family: verdana, sans-serif;
+    height: 30%;
+    left: 35%;
+    margin: 0 auto;
+    position: absolute;
+    top: 25%;
+    width: 30%;
+}
+
+#calendar-popup-text {
+    background-color: #f4f8f5;
+    border: 0;
+    font-size: 2vh;
+    height: 15%;
+    left: 5%;
+    position: absolute;
+    top: 37%;
+    width: 90%;
+}
+
+#cancel-note {
+    background-color: white;
+    border-radius: 50px;
+    border: 0px;
+    bottom: 15%;
+    color: #39b594;
+    cursor: pointer;
+    font-size: 2vh;
+    height: 18%;
+    outline: 2px solid #39b594;
+    position: absolute;
+    right: 18%;
+    width: 23%;
+}
+
+#popup-title {
+    font-size: 30px;
+    margin: 7% 5%;
+}
+
+#submit-note {
+    background-color: #a9c7bf;
+    border-radius: 50px;
+    border: 0;
+    bottom: 15%;
+    color: white;
+    cursor: pointer;
+    font-size: 2vh;
+    height: 18%;
+    left: 18%;
+    position: absolute;
+    width: 23%;
+}

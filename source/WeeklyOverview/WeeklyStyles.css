@@ -1,0 +1,532 @@
+/*
+NOTE: In order to find component-specific sections of CSS, search this document
+for our delimiter: ||
+*/
+
+/* || General */
+
+* {
+    font-family: 'Montserrat', Montserrat;
+    font-weight: bold;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+img {
+    display: block;
+    margin-top: 10px;
+    width: 100%;
+}
+
+span {
+    display: block;
+}
+
+select {
+    border-radius: 30px;
+    border: 1px solid #39b594;
+    display: block;
+    font-size: 16px;
+    height: 32px;
+    margin-top: 2px;
+    padding-left: 12px;
+    width: 120px;
+}
+
+.wrapper {
+    align-items: stretch;
+    background: black;
+    display: grid;
+    grid-template-rows: 1fr 3fr;
+    height: 100vh;
+    justify-items: stretch;
+    margin: 0px;
+
+    /* 
+     * will only apply to those with a specified height
+     * hides whatever is overflowed, which is fine
+     * since we specified the high to be 100% 
+     */
+    overflow-y: hidden;
+    padding: 0px;
+    width: 100vw;
+}
+
+/* || Header */
+
+.alert {
+    background-color: #38b593;
+    color: white;
+    display: none;
+    justify-content: space-between;
+    left: 0px;
+    margin-bottom: 15px;
+    padding: 20px;
+    position: absolute;
+    right: 0px;
+    z-index: 1;
+}
+
+.header {
+    background-image: url('../Images/weekly_header.jpg');
+    display: inline-flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#header_calendar_button {
+    background-color: black;
+    border-radius: 50%;
+    border: 0;
+    height: 10vh;
+    outline: 1.5px solid #ffffff;
+    overflow: hidden;
+    position: absolute;
+    right: 18vh;
+    top: 2vh;
+    width: 10vh;
+}
+
+#header_calendar_button > img {
+    filter: invert();
+    height: 10vh;
+    margin: 0 auto;
+    width: 10vh;
+}
+
+#header_calendar_button:hover {
+    cursor: pointer;
+    filter: invert() brightness(50%);
+}
+
+#header_date {
+    background-color: rgba(30, 30, 30, 0.7);
+    border-radius: 10px;
+    color: white;
+    font-size: 7vh;
+    font-style: normal;
+    left: 7%;
+    padding: 0.5%;
+    position: relative;
+    text-align: center;
+    top: 7%;
+    width: fit-content;
+}
+
+#header_date:hover {
+    background-color: #ddd;
+    color: #888;
+    cursor: pointer;
+}
+
+#header_settings_button {
+    border-radius: 50%;
+    border: 0;
+    height: 10vh;
+    outline: 1.5px solid #ffffff;
+    overflow: hidden;
+    position: absolute;
+    right: 5vh;
+    top: 2vh;
+    width: 10vh;
+}
+
+#header_settings_button > img {
+    background-color: white;
+    height: 10vh;
+    margin: 0 auto;
+    width: 10vh;
+}
+
+#header_settings_button > img:hover {
+    cursor: pointer;
+    filter: brightness(50%);
+}
+
+/* || Rest of Content Other than Header */
+
+.content {
+    display: grid;
+    grid-template-columns: 4fr 3fr 3fr;
+}
+
+/* || Weekly Preview Panel */
+
+#todo {
+    background-color: white;
+    border-color: black;
+    border-radius: 2vw;
+    border-style: solid;
+    border-width: 1mm;
+    grid-area: todo;
+    height: 77vh;
+    margin: 1vw;
+    min-height: 35vw;
+    overflow: auto;
+    padding: 1vw 3vw 1vw 2vw;
+    width: 80%;
+}
+
+#todo::-webkit-scrollbar {
+    display: none; /* color of the tracking area */
+}
+
+.weekly_column {
+    background: #c2f7b5;
+}
+
+#weekly-preview-top-border {
+    width: 100%;
+    border-width: 2px;
+    border-color: black;
+}
+
+/* || Notes and Goal Reminder Panels */
+
+.monthly_column {
+    background: #c2f7b5;
+    display: grid;
+    grid-template-rows: 4fr 6fr;
+}
+
+/* || Notes Panel */
+
+#notes {
+    background-color: white;
+    border-color: black;
+    border-radius: 2vw;
+    border-style: solid;
+    border-width: 1mm;
+    margin: 1vw;
+    padding: 1vw;
+    position: relative;
+}
+
+#notes-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+#notes-save {
+    background-color: white;
+    border-color: white;
+    border-color: white;
+    border-style: solid;
+    box-shadow: none;
+    cursor: pointer;
+    font-size: 2vh;
+    height: fit-content;
+    margin-right: 1.2vw;
+}
+
+#notes-save:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* || Goal Reminder Panel */
+
+#goalReminder {
+    background-color: white;
+    border-color: black;
+    border-radius: 2vw;
+    border-style: solid;
+    border-width: 1mm;
+    display: grid;
+    grid-template-rows: [title] 15% [month] 40% [year] 40%;
+    height: 45.25vh;
+    margin: 0.7vw;
+    padding: 0.5vw;
+}
+
+#goalReminder > h1 {
+    font-size: 2vw;
+    grid-row-start: title;
+}
+
+#goalSubtitle {
+    font-size: 1.5vw;
+}
+
+#monthGoal {
+    grid-row-start: month;
+    height: 8.5vh;
+    max-height: 10vh;
+    overflow: auto;
+}
+
+#monthGoal > h2 {
+    background-color: white;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 1px;
+}
+
+#yearGoal {
+    grid-row-start: year;
+    height: 8.5vh;
+    max-height: 10vh;
+    overflow: auto;
+}
+
+#yearGoal > h2 {
+    background-color: white;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 1px;
+}
+
+/* || Photo Album Block */
+
+li.image-wrapper {
+    display: block;
+    left: 5%;
+    padding: 5px;
+    position: relative;
+    width: 90%;
+}
+
+#photo_album {
+    overflow-y: scroll;
+}
+
+#photo_album::-webkit-scrollbar {
+    display: none; /* color of the tracking area */
+}
+
+.photo_column {
+    background: #c2f7b5;
+}
+
+.photo_header {
+    display: grid;
+    grid-template-columns: 9fr 1fr;
+    text-align: left;
+}
+
+.photo_wrapper {
+    background: white;
+    border-color: black;
+    border-radius: 2vw;
+    border-style: solid;
+    border-width: 1mm;
+    display: grid;
+    grid-template-rows: 1fr 9fr;
+    height: 74.9vh;
+    margin: 1vw;
+    padding: 1vw 2vw 2vw 1vw;
+    position: relative;
+}
+
+ul.stage {
+    height: 100%;
+    padding-left: 0;
+    white-space: nowrap;
+}
+
+/* || PFP/Settings */
+
+img.pwd-icon {
+    margin-left: 10px;
+    margin-top: 11.25px;
+    opacity: 0.2;
+    position: absolute;
+    width: 12px;
+    z-index: 999;
+}
+
+.bannerImage {
+    margin-top: 25px;
+}
+
+#banImg {
+    opacity: 0;
+    position: absolute;
+    z-index: -1;
+}
+
+#banImg-label {
+    background-color: #ffffff;
+    border-radius: 30px;
+    border: 2px solid #39b594;
+    color: black;
+    cursor: pointer;
+    display: inline;
+    font-size: 14px;
+    padding: 1% 4%;
+    width: 80%;
+}
+
+#banImg-upload {
+    background-color: #39b594;
+    border-radius: 30px;
+    border: 2px solid #ffffff;
+    color: white;
+    cursor: pointer;
+    display: none;
+    font-size: 14px;
+    margin-bottom: -7px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 7px;
+    padding: 1.5% 1%;
+    width: 80%;
+}
+
+.banner-text {
+    display: inline;
+    width: 20%;
+}
+
+h2.title {
+    display: inline;
+    margin-right: 15%;
+    margin-left: 2%;
+}
+
+input.pwd-btn {
+    background: #39b594;
+    border-radius: 30px;
+    border: 0px;
+    color: #ffffff;
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 18.72px 30%;
+    padding: 7px;
+    top: 50%;
+    width: 40%;
+}
+
+input.pwd-btn:hover {
+    background: #7eb8a8;
+    cursor: pointer;
+}
+
+input.pwd-pass {
+    background-color: #f4f8f5;
+    color: #9a9a9a;
+    font-family: verdana, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 2.5px;
+    margin-top: 2.5px;
+    padding-bottom: 5px;
+    padding-left: 26px;
+    padding: 5px 30px;
+    width: 180px;
+}
+
+#logout-btn {
+    background: #39b594;
+    border-radius: 30px;
+    border: 0px;
+    color: #ffffff;
+    font-family: monospace;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5% 30%;
+    padding: 7px;
+    top: 50%;
+    width: 40%;
+}
+
+#logout-btn:hover {
+    background: #7eb8a8;
+    cursor: pointer;
+}
+
+#notesDino {
+    height: 13vh;
+    position: relative;
+    right: 14vh;
+    top: -9vh;
+    width: 10vw;
+}
+
+#pass-subti {
+    padding-top: 2.5vh;
+}
+
+#proImg {
+    display: none;
+    opacity: 0;
+    position: absolute;
+    z-index: -1;
+}
+
+#proImg-label {
+    border-radius: 50%;
+    display: inline-block;
+    height: 12vh;
+    margin-bottom: -4.5vh;
+    margin-right: 3px;
+    max-height: 80px;
+    max-width: 80px;
+    overflow: hidden;
+    position: relative;
+    width: 12vh;
+}
+
+#proImg-label-pic {
+    color: white;
+    display: inline;
+    height: 12vh;
+    margin: 0 auto;
+    max-height: 80px;
+    max-width: 80px;
+    width: 12vh;
+}
+
+#proImg-label-pic:hover {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+#settings {
+    background-color: #ffffff;
+    border-radius: 3px;
+    border: 1px solid black;
+    display: none;
+    left: 50%;
+    padding: 25px;
+    position: absolute;
+    top: 10%;
+    transform: translate(-50%, -10%);
+    width: 280px;
+    z-index: 1;
+}
+
+span.close {
+    display: inline;
+    float: right;
+    font-size: 40px;
+    margin-right: -5px;
+    margin-top: -20px;
+    position: relative;
+    text-align: right;
+}
+
+span.close:hover {
+    cursor: pointer;
+}
+/* The close button */
+.closebtn {
+    margin-left: 10%;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* When moving the mouse over the close button */
+.closebtn:hover {
+    color: black;
+}

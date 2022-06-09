@@ -1,436 +1,130 @@
-/* eslint-disable no-unused-vars */
-/* es-lint complains about unused-vars because many functions are not called */
+import { auth, db } from './FirebaseInit.js';
+import {
+    get,
+    push,
+    ref,
+    remove,
+    set,
+    update,
+} from './firebase-src/firebase-database.min.js';
+
+// see getMonthName()
+const MONTH_NAMES = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+];
+
+// regular expression testing on the password
+const UPPER_CASE_PATTERN = /(?=.*?[A-Z])/;
+const LOWER_CASE_PATTERN = /(?=.*?[a-z])/;
+const DIGIT_PATTERN = /(?=.*?[0-9])/;
+const SPECIAL_CHAR_PATTERN = /(?=.*?[#?!@$%^&*-])/;
 
 /**
+ * add a base64 encoded photo in the database
+ * @param {String} date string of the form "mm/dd/yyyy"
+ * @param {File} photo as file-type that will be converted to base64
+ * @returns void
+ * Here is a comment for the purposes of "adding a small change"
+ * to the repo
+ *
  * Want to first check if database exists, and if not, set it up
  * a constant name to our database
  */
-/* cspell:disable-next-line */
-const DB_NAME = 'bujoBase';
+async function addPhoto(dayStr, photoFile) {
+    const currentUserID = await getUserID();
 
-/**
- * A constant of our database version
- */
-const DB_VERSION = 1;
+    const [month, day, year] = dayStr.split('/');
+    const base64Str = await getBase64(photoFile);
+    const dbPath = `${currentUserID}/${year}/${month}/${day}/photos`;
+    // creates a new key for the new photo and stores it as
+    // 'firebaseUUID: base64String'
+    pushObjToDBPath(dbPath, base64Str);
+}
 
-// contains mockData to populate the db
-let mockData;
-
-/**
- * will contain the db object returned from "initDB()" to be used in
- * creating future transactions, has to be set via "setDB()"
- */
-let db;
-
-/**
- * Function checks to see if this visitor has a database set up
- * if it doesn't, then creates the stores and indices
- * NOTE: It is up to the CALLER to call "setDB" with the returned database
- * object before making any transactions
- * @returns a request for a db object
- */
-function initDB() {
-    if (!('indexedDB' in window)) {
-        console.log('This browser does not support IndexedDB');
+async function redirectNotLoggedInUser(customAlertFunc, pageTimeoutInSeconds) {
+    const currentUserID = await getUserID();
+    if (currentUserID === undefined) {
+        customAlertFunc.call(null, 'Please login. Redirecting to login page');
+        await new Promise((r) => setTimeout(r, pageTimeoutInSeconds * 1000));
+        window.location.replace('../Login/Login.html');
     }
-    // not sure if we need to use dbPromise here
-    // eslint-disable-next-line no-unused-vars
-    let dbPromise = indexedDB.open(DB_NAME, DB_VERSION);
-    // TBH idk why google calls this "upgradeDb", perhaps they reference this
-    // creations as "upgrading"
-    dbPromise.onupgradeneeded = function (e) {
-        db = e.target.result;
-        if (!db.objectStoreNames.contains('days')) {
-            /**
-                     * creating a object store for days, these will be 
-                     * differentiated by a date string
-                     * (eg: '05-20-2021')
-                     * Here is a sample of what a 'days' could look like:
-                     {
-                         date: "xx-xx-xxxx",
-                            bullets: [bullet1,...],
-                            photos: [photo1,...]
-                        }
-                    */
-            db.createObjectStore('days', { keyPath: 'date' });
-        }
-        if (!db.objectStoreNames.contains('yearlyGoals')) {
-            /**
-                     * creating a yearly store for yearly goals, since we won't 
-                     * ever need to be getting a specific goal (but rather goals 
-                     * within a certain year), we can use an auto-increment key
-                     {
-                            year: xxxx
-                            goals: [yGoal1, yGoal2,..]
-                        }
-                        ^^^ should we store each goal separately, or as a list?
-                    */
-            db.createObjectStore('yearlyGoals', { keyPath: 'year' });
-        }
-        if (!db.objectStoreNames.contains('monthlyGoals')) {
-            /**
-                     * creating a monthly store for monthly goals, since we 
-                     * won't ever need to be getting a specific goal (but 
-                     * rather goals within a certain monthly), we can use an 
-                     * auto-increment key
-                     {
-                            month: xx/xxxx (month and year)
-                            goals: [mGoal1, mGoal2,..]
-                        }
-                        ^^^ should we store each goal separately, or as a list?
-                    */
-            db.createObjectStore('monthlyGoals', { keyPath: 'month' });
-        }
-        if (!db.objectStoreNames.contains('setting')) {
-            /**
-                     * creating a store to place the settings object
-                     * This one is tricky, since the story would only have a
-                     * max of 1 object (one per use). 
-                     * We can always retrieve it with a key=1, but we have to 
-                     * make sure we only create this once
-                     * -there doesn't seem to be a need to create additional 
-                     * indices
-                     { theme: 1, password: ..., name: ...  }
-                    */
-            db.createObjectStore('setting', { autoIncrement: true });
-        }
-        //populate mock data
-        //setUpMockData();
-    };
-    return dbPromise;
-}
-/*
-This is moved to the caller's responsibility
-
-dbPromise.onsuccess = function (e) {
-    console.log('database connected');
-    db = e.target.result;
-};
-dbPromise.onerror = function (e) {
-    console.log('onerror!');
-    console.dir(e);
-};
-*/
-
-/**
- * used to set the database object to make future transactions with
- * @param {Object} dbReturn
- */
-function setDB(dbReturn) {
-    db = dbReturn;
-}
-
-//}
-
-/**
- * Is called to populate the database with mockData when one doesn't exist
- * IS NOW DEPRECATED
- */
-function setUpMockData() {
-    fetch('/source/Backend/MockData.json')
-        .then((res) => {
-            return res.json();
-        })
-        .then((data) => {
-            mockData = data;
-            console.log('here is the mock Data', mockData);
-            console.log('setting up mock data');
-            createDay(mockData.sampleDay1);
-            createDay(mockData.sampleDay2);
-            createMonthlyGoals(mockData.sampleMonthlyGoals);
-            createYearlyGoals(mockData.sampleYearlyGoals);
-            createSettings(mockData.sampleSetting);
-        });
-
-    /* sample way to update the monthly goals
-        let month = mockData.sampleMonthlyGoals;
-        month.goals[0].text = 'run some laps';
-        updateMonthGoals(month);
-    */
-
-    /* sample way to delete day
-    
-    deleteDay('05/20/2021');
-    */
-
-    /* sample way to get the monthly goals
-        let req = getMonthlyGoals('12/2021');
-        req.onsuccess = function (e) {
-            console.log('got monthly goals');
-            console.log(e.target.result);
-        };
-    */
 }
 
 /**
- * sample function to get the mock data from the database
- * IS NOW DEPRECATED
- */
-function getMockData() {
-    let reqD1 = getDay('05/20/2021');
-    reqD1.onsuccess = function (e) {
-        console.log('got daily goals 05/20/2021');
-        console.log(e.target.result);
-    };
-
-    let reqMG = getMonthlyGoals('12/2021');
-    reqMG.onsuccess = function (e) {
-        console.log('got monthly goals');
-        console.log('Testing Build Process');
-        console.log(e.target.result);
-    };
-
-    let reqYG = getYearlyGoals('2020');
-    reqYG.onsuccess = function (e) {
-        console.log('got yearly goals 2020');
-        console.log(e.target.result);
-    };
-
-    let reqSE = getSettings();
-    reqSE.onsuccess = function (e) {
-        console.log('got settings');
-        console.log(e.target.result);
-    };
-
-    //This one is getting an entry that doesn't exist
-    let reqYGE = getYearlyGoals('2021');
-    reqYGE.onsuccess = function (e) {
-        /* cspell:disable-next-line */
-        console.log('didnt yearly goals 2021, should be undefined');
-        console.log(e.target.result);
-    };
-}
-
-/**
- * sample function to delete the mock data from database
- * IS NOW DEPRECATED
- */
-function deleteMockData() {
-    deleteDay('05/20/2021');
-    deleteMonthlyGoals('12/2021');
-    deleteYearlyGoals('2020');
-    deleteSettings();
-    //deleting something that isn't there actually doesn't throw an error
-    deleteYearlyGoals('2020');
-}
-
-/**
- * sample function to edit the mock data from database
- * IS NOW DEPRECATED
- */
-function editMockData() {
-    /* cspell:disable-next-line */
-    let settings = { username: 'Prospero', passoword: '1611', theme: 0 };
-    updateSettings(settings);
-}
-
-/**
- * given a string date key, will return the correct date object
- * @param {String} dateStr -  of form "mm/dd/yyyy" eg: "02/12/2020"
- * @returns A request for a date, if no day with the given dateStr exists,
- *  returns undefined
- */
-function getDay(dateStr) {
-    let tx = db.transaction(['days'], 'readonly');
-    let store = tx.objectStore('days');
-    let request = store.get(dateStr);
-    return request;
-}
-
-// Create Day
-/**
+ * Create Day
  * given a day object, will create an entry in the database
  * @param {Object} dayObj - Custom day object
- * @param {string} dayObj.date -  date of the form "mm/dd/yyyy/"
+ * @param {String} dayObj.date -  date of the form "mm/dd/yyyy/"
  *  (ie: "02/28/2021")
  * @param {Object} dayObj.bullets - an array of bullets
  * @param {Object} dayObj.photos - an array of photo objects, encoded in Base64
- * @param {string} dayObj.notes - a string representing the notes
+ * @param {String} dayObj.notes - a string representing the notes
  * @returns void
  */
-function createDay(dayObj) {
-    let tx = db.transaction('days', 'readwrite');
-    let store = tx.objectStore('days');
-    let request = store.add(dayObj);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`Created day entry ${dayObj.date}  successful`);
-    };
+async function createDay(dayObj) {
+    const currentUserID = await getUserID();
+
+    const [month, day, year] = dayObj.date.split('/');
+    const dbPath = `${currentUserID}/${year}/${month}/${day}`;
+    // we update instead of create because updateDay() calls createDay().
+    // this is simpler, but computationally costs more
+    updateObjAtDBPath(dbPath, dayObj);
 }
 
 /**
- * takes a given day object and updates it
- * the date property must match an entry in the database
- * @param {Object} dayObj - Custom day object
- * @param {string} dayObj.date -  date of the form "mm/dd/yyyy/"
- *  (ie: "02/28/2021")
- * @param {Object} dayObj.bullets - an array of bullets
- * @param {Object} dayObj.photos - an array of photo objects
- * @param {string} dayObj.notes - a string representing the notes
- * @returns void
- */
-function updateDay(dayObj) {
-    let tx = db.transaction(['days'], 'readwrite');
-    let store = tx.objectStore('days');
-    let request = store.put(dayObj);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`Updated day entry ${dayObj.date}  successful`);
-    };
-}
-
-/**
- * takes a given date string and deletes that entry from the database
- * @param {string} date string of the form "mm/dd/yyyy"
- * @returns void
- */
-function deleteDay(dayStr) {
-    let tx = db.transaction(['days'], 'readwrite');
-    let store = tx.objectStore('days');
-    let request = store.delete(dayStr);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`${dayStr} entry successful deleted`);
-    };
-}
-
-/**
- * given a year string, gets the set of yearly goals in that year
- * @param {String} yearStr - the year in the form "yyyy" (eg: "2021")
- * @returns A request for the year object, if none exist with the yearStr,
- *  returns undefined
- */
-function getYearlyGoals(yearStr) {
-    let tx = db.transaction(['yearlyGoals'], 'readonly');
-    let store = tx.objectStore('yearlyGoals');
-    let request = store.get(yearStr);
-    return request;
-}
-
-/**
- * given a yearlyGoals obj, creates a yearGoals object which contains the year,
- * as well as a list of yearly goals
- * @param {Object} yearObj - custom year object
- * @param {string} yearObj.year - year in the form "xxxx" (eg: "2020")
- * @param {Object} yearObj.goals - an array of custom goal objects
- * @returns void
- */
-function createYearlyGoals(yearObj) {
-    let tx = db.transaction(['yearlyGoals'], 'readwrite');
-    let store = tx.objectStore('yearlyGoals');
-    let request = store.add(yearObj);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`Created yearlyGoal ${yearObj.year} entry successful`);
-    };
-}
-
-/**
- * updates a yearlyGoals already existing in the db
- * the year property much match one already existing in the database
- * @param {Object} yearObj - custom year object
- * @param {string} yearObj.year - year in the form "xxxx" (eg: "2020")
- * @param {Object} yearObj.goals - an array of custom goal objects
- * @returns void
- */
-function updateYearsGoals(yearObj) {
-    let tx = db.transaction(['yearlyGoals'], 'readwrite');
-    let store = tx.objectStore('yearlyGoals');
-    let request = store.put(yearObj);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`updated yearlyGoal entry ${yearObj.year} successful`);
-    };
-}
-
-/**
- * Deletes the given Yearly Goals under the year string
- * @param {String} yearStr - year string of the form 'xxxx' (eg: "2021")
- * @returns void
- */
-function deleteYearlyGoals(yearStr) {
-    let tx = db.transaction(['yearlyGoals'], 'readwrite');
-    let store = tx.objectStore('yearlyGoals');
-    let request = store.delete(yearStr);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`deleted yearlyGoal entry ${yearStr} successful`);
-    };
-}
-
-/**
- * gets a monthlyGoal object given the input month string
- * @param {String} monthStr - month along with year in the form "xx/xxxx"
- *  (eg: "02/2022")
- * @returns a request for a monthlyGoals object if none with the monthStr
- *  exist, returns undefined
- */
-function getMonthlyGoals(monthStr) {
-    let tx = db.transaction(['monthlyGoals'], 'readonly');
-    let store = tx.objectStore('monthlyGoals');
-    let request = store.get(monthStr);
-    return request;
-}
-
-/**
- * creates a monthlyGoal object in the database given a monthlyGoal object
+ * create db object for month
  * @param {Object} monthObj
- * @param {string} monthObj.year - month and year in the form "mm/yyyy"
+ * @param {String} monthObj.month - month and year in the form "mm/yyyy"
  *  (eg: "12/2020")
  * @param {Object} monthObj.goals - an array of custom goal objects
  * @returns void
  */
-function createMonthlyGoals(monthObj) {
-    let tx = db.transaction(['monthlyGoals'], 'readwrite');
-    let store = tx.objectStore('monthlyGoals');
-    let request = store.add(monthObj);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`Created monthlyGoal entry ${monthObj.month} successful`);
-    };
+async function createMonthlyGoals(monthObj) {
+    const currentUserID = await getUserID();
+
+    const [month, year] = monthObj.month.split('/');
+    const dbPath = `${currentUserID}/${year}/${month}`;
+    // see bottom of createDay() for update justification
+    updateObjAtDBPath(dbPath, monthObj);
 }
 
 /**
- * updates a monthlyGoals object in the database  monthObj.month must
- * match one existing in the database
- * @param {Object} monthlyObj
- * @param {string} monthObj.month - month and year in the form "mm/yyyy"
- *  (eg: "12/2020")
- * @param {Object} monthObj.goals - an array of custom goal objects
+ * create db object for year
+ * @param {Object} yearObj - custom year object
+ * @param {String} yearObj.year - year in the form "xxxx" (eg: "2020")
+ * @param {Object} yearObj.goals - an array of custom goal objects
  * @returns void
  */
-function updateMonthlyGoals(monthObj) {
-    let tx = db.transaction(['monthlyGoals'], 'readwrite');
-    let store = tx.objectStore('monthlyGoals');
-    let request = store.put(monthObj);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`updated monthlyGoal entry ${monthObj.month} successful`);
-    };
+async function createYearlyGoals(yearObj) {
+    const currentUserID = await getUserID();
+
+    const dbPath = `${currentUserID}/${yearObj.year}`;
+    // see bottom of createDay() for update justification
+    updateObjAtDBPath(dbPath, yearObj);
+}
+
+/**
+ * delete db object for day
+ * @param {String} - date string of the form "mm/dd/yyyy"
+ * @returns void
+ */
+async function deleteDay(dayStr) {
+    const currentUserID = await getUserID();
+
+    const [month, day, year] = dayStr.split('/');
+    const dbPath = `${currentUserID}/${year}/${month}/${day}`;
+    deleteObjAtDBPath(dbPath);
 }
 
 /**
@@ -438,138 +132,451 @@ function updateMonthlyGoals(monthObj) {
  * @param {String} monthStr -  string of the form "xx/xxxx" eg: "02/2022"
  * @returns void
  */
-function deleteMonthlyGoals(monthStr) {
-    let tx = db.transaction(['monthlyGoals'], 'readwrite');
-    let store = tx.objectStore('monthlyGoals');
-    let request = store.delete(monthStr);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`delete monthly goal ${monthStr} entry successful`);
-    };
+async function deleteMonthlyGoals(monthStr) {
+    const currentUserID = await getUserID();
+    const [month, year] = monthStr.split('/');
+    const dbPath = `${currentUserID}/${year}/${month}/goals`;
+    deleteObjAtDBPath(dbPath);
 }
 
 /**
- * gets the current settings for the user
- * NOTE: Since there is only 1 user, there is only 1 setting object
- * @returns a request for a settings object
- */
-function getSettings() {
-    var tx = db.transaction(['setting'], 'readonly');
-    var store = tx.objectStore('setting');
-    //Since there is only one setting, we just get the first one
-    let request = store.get(1);
-    return request;
-}
-
-/**
- * stores a setting object in the database
- * @param {Object} setting
- * @param {String} setting.username - name of the user (ie: "Miranda")
- * @param {String} setting.password - password of the user (ie: "password")
- * @param {Number} setting.theme - theme id of the user (ie: 0)
- * @return void
- */
-function createSettings(setting) {
-    var tx = db.transaction(['setting'], 'readwrite');
-    var store = tx.objectStore('setting');
-    let request = store.add(setting);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`added setting entry for ${setting.username} successful`);
-    };
-}
-
-/**
- * updates the custom setting object with new info
- * @param {Object} setting
- * @param {String} setting.username - name of the user (ie: "Miranda")
- * @param {String} setting.password - password of the user (ie: "password")
- * @param {Number} setting.theme - theme id of the user (ie: 0)
+ * delete db object for month
+ * @param {String} monthStr - string of the form "xx/xxxx" eg: "02/2022"
+ * @param {string} base64 an encoding of an image from getBase64()
  * @returns void
  */
-function updateSettings(setting) {
-    var tx = db.transaction(['setting'], 'readwrite');
-    var store = tx.objectStore('setting');
-    let request = store.put(setting, 1);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
-    };
-    request.onsuccess = function () {
-        console.log(`updated setting entry for ${setting.username} successful`);
-    };
+async function deletePhoto(dayStr, base64) {
+    const currentUserID = await getUserID();
+
+    const [month, day, year] = dayStr.split('/');
+    const dbPath = `${currentUserID}/${year}/${month}/${day}/photos`;
+
+    // TODO: find more efficient way to store image keys (eg generate
+    // pseudorandom uuid based on base64String)
+    // we need to grab our existing photos, and iterate through to delete the
+    // photo because photos are stored as randomUUID:base64String. firebase
+    // does not support hash tables or arrays
+    const dayPhotos = await getDataAtDBPath(dbPath);
+    for (const [base64UUID, storedBase64] of Object.entries(dayPhotos)) {
+        if (storedBase64.length == base64.length && storedBase64 == base64) {
+            await deleteObjAtDBPath(`${dbPath}/${base64UUID}`);
+            break;
+        }
+    }
 }
 
 /**
- * deletes the setting object
+ * delete object at db path
+ * @param {String} path - path to key you would like to delete eg:
+ *                        "${currentUserID}/2022/02/05"
  * @returns void
  */
-function deleteSettings() {
-    var tx = db.transaction(['setting'], 'readwrite');
-    var store = tx.objectStore('setting');
-    let request = store.delete(1);
-    request.onerror = function (e) {
-        console.log('Error', e.target.error.name);
-        throw 'Error' + e.target.error.name;
+async function deleteObjAtDBPath(path) {
+    await remove(ref(db, path))
+        .then(() => {
+            console.log(`Data deleted successfully at ${path}`);
+        })
+        .catch((error) => {
+            console.log(`Data was not deleted successfully: ${error}`);
+        });
+}
+
+/**
+ * delete db object for year
+ * @param {String} yearStr - year string of the form 'xxxx' (eg: "2021")
+ * @returns void
+ */
+async function deleteYearlyGoals(yearStr) {
+    const currentUserID = await getUserID();
+
+    const dbPath = `${currentUserID}/${yearStr}/goals`;
+    deleteObjAtDBPath(dbPath);
+}
+
+/**
+ * Get user banner image
+ * @returns default OR base64 URL of banner image if user uploads one
+ */
+async function getBannerImage() {
+    const currentUserID = await getUserID();
+
+    const dbPath = `${currentUserID}/bannerImage`;
+    return getDataAtDBPath(dbPath);
+}
+
+/**
+ * compute base64 encoding for file (file must be an image)
+ * @param {File} file - a file that contains an image which must be encoded
+ *                      into base64 format
+ * @returns Promise that resolves to the images base64 encoding
+ */
+function getBase64(file) {
+    let reader = new FileReader();
+    // eslint-disable-next-line no-unused-vars
+    let promise = new Promise((resolve, reject) => {
+        reader.onload = () => {
+            resolve(reader.result);
+        };
+        reader.readAsDataURL(file);
+    });
+    return promise;
+}
+
+/**
+ * get current date in the form of an object
+ * @returns Object with string keys day, month, and year
+ */
+function getCurrentDate() {
+    var today = new Date();
+    const dateObj = {
+        day: String(today.getDate()).padStart(2, '0'),
+        month: String(today.getMonth() + 1).padStart(2, '0'), // January is 0
+        year: String(today.getFullYear()),
     };
-    request.onsuccess = function () {
-        console.log('setting entry deleted successful');
+
+    return dateObj;
+}
+
+/**
+ * compute current week strings based on current day. first day of the week
+ * will be Sunday and last day of the week will be Saturday
+ * @returns Array of string keys in the format of 'mm/dd/yyyy'
+ */
+function getCurrentWeek() {
+    const currDayObj = getCurrentDate();
+    // source: https://stackoverflow.com/questions/7556591/is-the-javascript-date-object-always-one-day-off
+    const curr = new Date(
+        `${currDayObj.year}/${currDayObj.month}/${currDayObj.day}`
+    );
+    const week = [];
+    // source: https://medium.com/@quynh.totuan/how-to-get-the-current-week-in-javascript-9e64d45a9a08
+    for (let i = 0; i < 7; i++) {
+        const first = curr.getDate() - curr.getDay() + i;
+        const date = new Date(curr.setDate(first)).toISOString().slice(0, 10);
+        const [year, month, day] = date.split('-');
+        const formattedString = `${month}/${day}/${year}`;
+        week.push(formattedString);
+    }
+
+    return week;
+}
+
+/**
+ * get data from db
+ * @param {String} path - path to key you would like to retrieve eg:
+ *                        "${currentUserID}/2022/02/05"
+ * @returns Object containing requested data at path from firebase db.
+ *          undefined if the path does not exist in the db
+ */
+async function getDataAtDBPath(path) {
+    const snapshot = await get(ref(db, path));
+    if (!snapshot.exists()) {
+        console.log(`No DB path ${path}`);
+        return undefined;
+    } else {
+        return snapshot.val();
+    }
+}
+
+// TODO: Refactor getCurrentDay
+function getDateObj(dateStr) {
+    var today = new Date(dateStr);
+    const dateObj = {
+        day: String(today.getDate()).padStart(2, '0'),
+        month: String(today.getMonth() + 1).padStart(2, '0'), // January is 0
+        year: String(today.getFullYear()),
     };
+
+    return dateObj;
 }
 
 /**
- * Below are constructors for objects to store
- * in the database that you may help find useful
+ * get db object from day
+ * @param {String} dateStr - of form "mm/dd/yyyy" eg: "02/12/2020"
+ * @returns Object A request for a date, if no day with the given dateStr exists,
+ *  returns undefined.
  */
+async function getDay(dateStr) {
+    const currentUserID = await getUserID();
 
-/**
- * creates a new year object given a year string
- * @param {String} yearStr - the year (eg: "2020")
- * @returns {Object} yearObj - the new year object
- * @returns {String} yearObj.year - string of the year
- * @returns {Object} yearObj.goals- an array (initially empty) of goal objects
- */
-function initYear(yearStr) {
-    return { year: yearStr, goals: [] };
+    const [month, day, year] = dateStr.split('/');
+    const dbPath = `${currentUserID}/${year}/${month}/${day}`;
+    return getDataAtDBPath(dbPath);
 }
 
 /**
- * creates a new month object given a month string
- * @param {String} monthStr - a string representation of the month (this also
- *  includes the year)
- * @returns {Object} monthObj - the new monthly goal obj
- * @returns {String} monthObj.year - string of the month (which is of the form
- *  "xx/xxxx" eg: "02/2021")
- * @returns {Object} monthObj.goals- an array (initially empty) of goal objects
+ * get the name associated with a month's number (eg '05' => 'May')
+ * @param {String} monthNumber - a month number in the form of '0x' (eg 05) or
+ * '1x' (eg 12)
+ * @returns name of the corresponding month
  */
-function initMonth(monthStr) {
-    return { month: monthStr, goals: [] };
+function getMonthName(monthNumber) {
+    return MONTH_NAMES[parseInt(monthNumber) - 1];
 }
 
 /**
- * creates a new day object given a date string
- * @param {String} dateStr - a string of the goal
- * @returns {Object} dateObj - the new day object
- * Look into createDay() to see what a date object consists of
+ * get db object for an entire month object
+ * @param {String} monthStr - month along with year in the form "xx/xxxx"
+ *  (eg: "02/2022")
+ * @returns a request for a month object. if none with the monthStr
+ *  exist, returns undefined
  */
-function initDay(dateStr) {
-    return { date: dateStr, bullets: [], photos: [], notes: '' };
+async function getMonthObj(monthStr) {
+    const currentUserID = await getUserID();
+
+    const [month, year] = monthStr.split('/');
+    const dbPath = `${currentUserID}/${year}/${month}`;
+    return getDataAtDBPath(dbPath);
 }
 
 /**
- * creates a new goal object given a goal string
- * new goals area always initialized as not done
- * @param {String} goalStr - a string of the goal
- * @returns {Object} goal - the new goal object
- * @returns {String} goal.text - the string of what the text is
- * @returns {boolean} goal.done - is the goal is done or not
+ * get db object for a month's goals
+ * @param {String} monthStr - month along with year in the form "xx/xxxx"
+ *  (eg: "02/2022")
+ * @returns a request for a monthlyGoals object. if none with the monthStr
+ *  exist, returns undefined
  */
-function initGoal(goalStr) {
-    return { text: goalStr, done: false };
+async function getMonthlyGoals(monthStr) {
+    const currentUserID = await getUserID();
+
+    const [month, year] = monthStr.split('/');
+    const dbPath = `${currentUserID}/${year}/${month}/goals`;
+    return getDataAtDBPath(dbPath);
 }
+
+/**
+ * Get user profile image
+ * @returns default OR base64 URL of profile image if user uploads one
+ */
+async function getProfileImage() {
+    const currentUserID = await getUserID();
+
+    const dbPath = `${currentUserID}/profileImage`;
+    return getDataAtDBPath(dbPath);
+}
+
+/**
+ * Get user theme preference
+ * @returns user theme preference
+ */
+async function getTheme() {
+    const currentUserID = await getUserID();
+
+    const dbPath = `${currentUserID}/theme`;
+    return getDataAtDBPath(dbPath);
+}
+
+/**
+ * get current user's id
+ * @returns user id. null if no user is signed in or the
+ * user is not signed in (i.e bypassing the authentication).
+ */
+async function getUserID() {
+    // source: https://github.com/firebase/firebase-js-sdk/issues/462#:~:text=you%20can%20easily%20implement%20that%20on%20your%20own%20with%20a%20couple%20of%20lines%3A
+    const user = await new Promise((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            unsubscribe();
+            resolve(user);
+        }, reject);
+    });
+
+    return user ? user.uid : undefined;
+}
+
+/**
+ * get db object for year
+ * @param {String} yearStr - the year in the form "yyyy" (eg: "2021")
+ * @returns A request for the year object, if none exist with the yearStr,
+ *  returns undefined
+ */
+async function getYearlyGoals(yearStr) {
+    const currentUserID = await getUserID();
+
+    const dbPath = `${currentUserID}/${yearStr}/goals`;
+    return getDataAtDBPath(dbPath);
+}
+
+/**
+ * Check if input string is an email
+ * @param {String} userEmail
+ * @returns true if email is valid
+ */
+function isValidEmail(userEmail) {
+    if (userEmail.indexOf('@') === -1) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Check if password contains at least eight characters, an upper
+ * case, a number, and a special character. Raise an alert if any
+ * of the case is not satisfied.
+ * @param {String} password
+ * @returns empty string if all conditions are satisfied. Otherwise
+ * error message.
+ */
+function isValidPassword(password) {
+    if (password.length < 8) {
+        return 'Password length must be at least eight!';
+    } else if (!UPPER_CASE_PATTERN.test(password)) {
+        return 'Password must contain an upper case!';
+    } else if (!LOWER_CASE_PATTERN.test(password)) {
+        return 'Password must contain a lower case!';
+    } else if (!DIGIT_PATTERN.test(password)) {
+        return 'Password must contain a digit!';
+    } else if (!SPECIAL_CHAR_PATTERN.test(password)) {
+        return 'Password must contain a special character!';
+    }
+    return '';
+}
+
+function pushObjToDBPath(path, obj) {
+    push(ref(db, path), obj)
+        .then(() => {
+            console.log(`Data pushed successfully at ${path}`);
+        })
+        .catch((error) => {
+            console.log(`Data was not pushed successfully: ${error}`);
+        });
+}
+
+function setObjAtDBPath(path, obj) {
+    set(ref(db, path), obj)
+        .then(() => {
+            console.log(`Data set successfully at ${path}`);
+        })
+        .catch((error) => {
+            console.log(`Data was not set successfully: ${error}`);
+        });
+}
+
+/**
+ * Update user's new banner image in DB
+ * @param {String} imgStr Image URL of the banner image
+ */
+async function updateBannerImage(imgStr) {
+    const currentUserID = await getUserID();
+    let dbPath = `${currentUserID}/bannerImage`;
+    setObjAtDBPath(dbPath, imgStr);
+}
+
+/**
+ * update db object for day
+ * @param {Object} dayObj - Custom day object
+ * @param {String} dayObj.date -  date of the form "mm/dd/yyyy/"
+ *  (ie: "02/28/2021")
+ * @param {Object} dayObj.bullets - an array of bullets
+ * @param {Object} dayObj.photos - an array of photo objects
+ * @param {String} dayObj.notes - a string representing the notes
+ * @returns void
+ */
+function updateDay(dayObj) {
+    createDay(dayObj);
+}
+
+/**
+ * update db object for month
+ * @param {Object} monthlyObj
+ * @param {String} monthObj.month - month and year in the form "mm/yyyy"
+ *  (eg: "12/2020")
+ * @param {Object} monthObj.goals - an array of custom goal objects
+ * @returns void
+ */
+function updateMonthlyGoals(monthObj) {
+    createMonthlyGoals(monthObj);
+}
+
+/**
+ * Update the notes of year/month/day
+ * @param {String} dateStr - of form "mm/dd/yyyy" eg: "02/12/2020"
+ * @param {String} notes notes to update
+ */
+async function updateNote(dateStr, notes) {
+    const currentUserID = await getUserID();
+
+    const [month, day, year] = dateStr.split('/');
+    let dbPath = `${currentUserID}/${year}/${month}/${day}/notes`;
+    setObjAtDBPath(dbPath, notes);
+}
+
+/**
+ * update db object at path. if no path exists, create object at path
+ * @param {String} path - path to key you would like to update eg:
+ *                        "${currentUserID}/2022/02/05"
+ * @param {Object} obj - object to set in place of existing object at path in db
+ * @returns void
+ */
+function updateObjAtDBPath(path, obj) {
+    update(ref(db, path), obj)
+        .then(() => {
+            console.log(`Data updated successfully at ${path}`);
+        })
+        .catch((error) => {
+            console.log(`Data was not updated successfully: ${error}`);
+        });
+}
+
+/**
+ * Update user's new profile image in DB
+ * @param {String} imgStr Image URL of the profile image
+ */
+async function updateProfileImage(imgStr) {
+    const currentUserID = await getUserID();
+    let dbPath = `${currentUserID}/profileImage`;
+    setObjAtDBPath(dbPath, imgStr);
+}
+
+/**
+ * Set new theme for the user
+ * @param {String} newTheme Hex value of new theme color
+ */
+async function updateTheme(newTheme) {
+    const currentUserID = await getUserID();
+    let dbPath = `${currentUserID}/theme`;
+    setObjAtDBPath(dbPath, newTheme);
+}
+
+/**
+ * update db object for year
+ * @param {Object} yearObj - custom year object
+ * @param {String} yearObj.year - year in the form "xxxx" (eg: "2020")
+ * @param {Object} yearObj.goals - an array of custom goal objects
+ * @returns void
+ */
+function updateYearlyGoals(yearObj) {
+    createYearlyGoals(yearObj);
+}
+
+export {
+    addPhoto,
+    createDay,
+    createMonthlyGoals,
+    createYearlyGoals,
+    deleteDay,
+    deleteMonthlyGoals,
+    deletePhoto,
+    deleteYearlyGoals,
+    getBannerImage,
+    getBase64,
+    getCurrentDate,
+    getCurrentWeek,
+    getDateObj,
+    getDay,
+    getMonthName,
+    getMonthObj,
+    getMonthlyGoals,
+    getProfileImage,
+    getTheme,
+    getYearlyGoals,
+    isValidEmail,
+    isValidPassword,
+    redirectNotLoggedInUser,
+    updateBannerImage,
+    updateDay,
+    updateMonthlyGoals,
+    updateNote,
+    updateProfileImage,
+    updateTheme,
+    updateYearlyGoals,
+};
